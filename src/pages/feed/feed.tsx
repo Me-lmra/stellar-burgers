@@ -7,13 +7,13 @@ import {
   getFeedOrdersSelector,
   getFeedLoadingSelector,
 } from '@services/slices/feed';
-import { type RootState, useDispatch, useSelector } from '@services/store';
+import { useDispatch, useSelector } from '@services/store';
 
 export const Feed = (): React.JSX.Element => {
   const dispatch = useDispatch();
 
-  const orders = useSelector((state: RootState) => getFeedOrdersSelector(state));
-  const isLoading = useSelector((state: RootState) => getFeedLoadingSelector(state));
+  const orders = useSelector(getFeedOrdersSelector);
+  const isLoading = useSelector(getFeedLoadingSelector);
 
   useEffect(() => {
     void dispatch(getFeeds());

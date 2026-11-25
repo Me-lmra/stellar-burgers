@@ -16,9 +16,10 @@ const initialState: TProfileState = {
   error: null,
 };
 
-export const fetchProfileOrders = createAsyncThunk('profile/fetchOrders', async () => {
-  return await getOrdersApi();
-});
+export const fetchProfileOrders = createAsyncThunk(
+  'orders/fetchProfileOrders',
+  getOrdersApi
+);
 
 export const profileSlice = createSlice({
   name: 'profile',
@@ -39,6 +40,20 @@ export const profileSlice = createSlice({
         state.error = action.error?.message ?? 'Ошибка загрузки заказов';
       });
   },
+  selectors: {
+    getProfileOrdersSelector: (state) => state.orders,
+    getProfileLoadingSelector: (state) => state.isLoading,
+    getProfileErrorSelector: (state) => state.error,
+    getProfileOrderByNumberSelector: (state, number: number) =>
+      state.orders.find((order) => order.number === number) ?? null,
+  },
 });
+
+export const {
+  getProfileOrdersSelector,
+  getProfileLoadingSelector,
+  getProfileErrorSelector,
+  getProfileOrderByNumberSelector,
+} = profileSlice.selectors;
 
 export const profileReducer = profileSlice.reducer;

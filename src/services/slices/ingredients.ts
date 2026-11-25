@@ -17,9 +17,7 @@ const initialState: TIngredientsState = {
 
 export const fetchIngredients = createAsyncThunk(
   'ingredients/fetchIngredients',
-  async () => {
-    return await getIngredientsApi();
-  }
+  getIngredientsApi
 );
 
 export const ingredientsSlice = createSlice({
@@ -41,6 +39,17 @@ export const ingredientsSlice = createSlice({
         state.error = action.error?.message ?? 'Ошибка загрузки ингредиентов';
       });
   },
+  selectors: {
+    getIngredientsDataSelector: (state) => state.data,
+    getIngredientsLoadingSelector: (state) => state.loading,
+    getIngredientsErrorSelector: (state) => state.error,
+  },
 });
+
+export const {
+  getIngredientsDataSelector,
+  getIngredientsLoadingSelector,
+  getIngredientsErrorSelector,
+} = ingredientsSlice.selectors;
 
 export const ingredientsReducer = ingredientsSlice.reducer;

@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 import { getFeedsApi, getOrderByNumberApi } from '@utils/burger-api';
 
-import type { RootState } from '@services/store';
 import type { TOrder } from '@utils-types';
 
 export type TFeedState = {
@@ -21,9 +20,7 @@ const initialState: TFeedState = {
   error: null,
 };
 
-export const getFeeds = createAsyncThunk('feed/getFeeds', async () => {
-  return await getFeedsApi();
-});
+export const getFeeds = createAsyncThunk('feed/getFeeds', getFeedsApi);
 
 export const getOrderByNumber = createAsyncThunk(
   'feed/getOrderByNumber',
@@ -69,20 +66,24 @@ export const feedSlice = createSlice({
         state.error = action.error?.message ?? 'Ошибка загрузки заказа';
       });
   },
+  selectors: {
+    getFeedOrdersSelector: (state) => state.orders,
+    getFeedLoadingSelector: (state) => state.isLoading,
+    getFeedErrorSelector: (state) => state.error,
+    getFeedTotalSelector: (state) => state.total,
+    getFeedTotalTodaySelector: (state) => state.totalToday,
+    getOrderByNumberSelector: (state, number: number) =>
+      state.orders.find((order) => order.number === number) ?? null,
+  },
 });
 
-export const getFeedOrdersSelector = (state: RootState): TOrder[] => state.feed.orders;
-export const getFeedTotalSelector = (state: RootState): number => state.feed.total;
-export const getFeedTotalTodaySelector = (state: RootState): number =>
-  state.feed.totalToday;
-export const getFeedLoadingSelector = (state: RootState): boolean =>
-  state.feed.isLoading;
-export const getFeedErrorSelector = (state: RootState): string | null =>
-  state.feed.error;
-
-export const getOrderByNumberSelector = (
-  state: RootState,
-  number: number
-): TOrder | null => state.feed.orders.find((order) => order.number === number) ?? null;
+export const {
+  getFeedOrdersSelector,
+  getFeedLoadingSelector,
+  getFeedErrorSelector,
+  getFeedTotalSelector,
+  getFeedTotalTodaySelector,
+  getOrderByNumberSelector,
+} = feedSlice.selectors;
 
 export const feedReducer = feedSlice.reducer;

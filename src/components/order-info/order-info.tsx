@@ -1,31 +1,42 @@
 import { Preloader, OrderInfoUI } from '@ui';
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import {
-  getOrderByNumber,
-  getOrderByNumberSelector,
-  getFeedLoadingSelector,
-} from '@services/slices/feed';
+import { getOrderByNumber, getOrderByNumberSelector } from '@services/slices/feed';
+import { getIngredientsDataSelector } from '@services/slices/ingredients';
+import { getProfileOrderByNumberSelector } from '@services/slices/profile';
 import { useSelector, useDispatch } from '@services/store';
 
-import type { RootState } from '@services/store';
 import type { TIngredient } from '@utils-types';
 
-export const OrderInfo = (): React.JSX.Element => {
+import styles from '../../components/app/app.module.css';
+
+type TOrderInfoProps = {
+  isModal?: boolean;
+};
+
+export const OrderInfo = ({ isModal = false }: TOrderInfoProps): React.JSX.Element => {
   const dispatch = useDispatch();
   const { number } = useParams<{ number: string }>();
 
-  const ingredients = useSelector((state: RootState) => state.ingredients.data);
-  const orderData = useSelector((state: RootState) =>
-    number ? getOrderByNumberSelector(state, Number(number)) : null
-  );
-  const isLoading = useSelector((state: RootState) => getFeedLoadingSelector(state));
+  const [isOrderLoading, setIsOrderLoading] = useState(false);
+
+  const ingredients = useSelector(getIngredientsDataSelector);
+  const orderData = useSelector((state) => {
+    if (!number) return null;
+    const num = Number(number);
+    return (
+      getProfileOrderByNumberSelector(state, num) ?? getOrderByNumberSelector(state, num)
+    );
+  });
 
   useEffect(() => {
     if (!number) return;
     if (orderData) return;
-    void dispatch(getOrderByNumber(Number(number)));
+    setIsOrderLoading(true);
+    void dispatch(getOrderByNumber(Number(number))).finally(() => {
+      setIsOrderLoading(false);
+    });
   }, [dispatch, number, orderData?.number]);
 
   const orderInfo = useMemo(() => {
@@ -67,9 +78,15 @@ export const OrderInfo = (): React.JSX.Element => {
     };
   }, [orderData, ingredients]);
 
-  if (isLoading || !orderInfo) {
+  if (isOrderLoading) {
     return <Preloader />;
   }
 
-  return <OrderInfoUI orderInfo={orderInfo} />;
+  if (!orderInfo) {
+    return (
+      <p className={`${styles.message} text text_type_main-medium`}>Заказ не найден</p>
+    );
+  }
+
+  return <OrderInfoUI orderInfo={orderInfo} isModal={isModal} />;
 };

@@ -5,7 +5,7 @@ import {
   nanoid,
 } from '@reduxjs/toolkit';
 
-import { orderBurgerApi, type TNewOrderResponse } from '@utils/burger-api';
+import { orderBurgerApi } from '@utils/burger-api';
 
 import type {
   TConstructorIngredient,
@@ -26,12 +26,7 @@ const initialState: TFullConstructorState = {
   orderModalData: null,
 };
 
-export const orderBurger = createAsyncThunk<TNewOrderResponse, string[]>(
-  'constructor/order',
-  async (ids: string[]) => {
-    return orderBurgerApi(ids);
-  }
-);
+export const orderBurger = createAsyncThunk('orders/orderBurger', orderBurgerApi);
 
 export const constructorSlice = createSlice({
   name: 'burgerConstructor',

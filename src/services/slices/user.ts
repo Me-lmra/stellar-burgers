@@ -13,19 +13,20 @@ import {
 } from '@utils/burger-api';
 import { setCookie, deleteCookie } from '@utils/cookie';
 
-import type { RootState } from '../store';
 import type { TUser } from '@utils-types';
 
 export type TUserState = {
   isAuthChecked: boolean;
   user: TUser | null;
   error: string | null;
+  isLoading: boolean;
 };
 
 const initialState: TUserState = {
   isAuthChecked: false,
   user: null,
   error: null,
+  isLoading: false,
 };
 
 // асинхронные экшены
@@ -88,6 +89,9 @@ export const userSlice = createSlice({
     authChecked: (state) => {
       state.isAuthChecked = true;
     },
+    clearError: (state) => {
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -135,10 +139,50 @@ export const userSlice = createSlice({
         state.isAuthChecked = true;
         state.user = null;
         state.error = null;
+      })
+
+      // восстановление пароля
+      .addCase(forgotPassword.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(forgotPassword.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(forgotPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error?.message ?? 'Ошибка восстановления пароля';
+      })
+
+      // сброс пароля
+      .addCase(resetPassword.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(resetPassword.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error?.message ?? 'Ошибка сброса пароля';
       });
+  },
+  selectors: {
+    getUserSelector: (state) => state.user,
+    getIsAuthCheckedSelector: (state) => state.isAuthChecked,
+    getUserLoadingSelector: (state) => state.isLoading,
+    getUserErrorSelector: (state) => state.error,
   },
 });
 
-export const { authChecked } = userSlice.actions;
+export const {
+  getUserSelector,
+  getIsAuthCheckedSelector,
+  getUserLoadingSelector,
+  getUserErrorSelector,
+} = userSlice.selectors;
+
+export const { authChecked, clearError } = userSlice.actions;
 export const userReducer = userSlice.reducer;
-export const getUserSelector = (state: RootState): TUser | null => state.user.user;

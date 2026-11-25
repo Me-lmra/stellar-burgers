@@ -16,14 +16,13 @@ import {
   ProfileOrders,
   NotFound404,
 } from '@pages';
-import { Preloader, ModalUI } from '@ui';
+import { Preloader } from '@ui';
 import { useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 
 import { fetchIngredients } from '@services/slices/ingredients';
 import { getUser, authChecked } from '@services/slices/user';
 import { useDispatch, useSelector } from '@services/store';
-import { getCookie } from '@utils/cookie';
 
 import type { RootState } from '@services/store';
 
@@ -56,9 +55,9 @@ const AppContent = (): React.JSX.Element => {
 
   useEffect(() => {
     void dispatch(fetchIngredients());
+    const refreshToken = localStorage.getItem('refreshToken');
 
-    const token = getCookie('accessToken');
-    if (token) {
+    if (refreshToken) {
       void dispatch(getUser());
     } else {
       void dispatch(authChecked());
@@ -109,9 +108,7 @@ const RouteComponent = (): React.JSX.Element => {
           path="/profile/orders/:number"
           element={
             <ProtectedRoute>
-              <div>
-                <OrderInfo />
-              </div>
+              <OrderInfo />
             </ProtectedRoute>
           }
         />
@@ -175,16 +172,16 @@ const RouteComponent = (): React.JSX.Element => {
             path="/feed/:number"
             element={
               <Modal title="Информация о заказе" onClose={handleClose}>
-                <OrderInfo />
+                <OrderInfo isModal />
               </Modal>
             }
           />
           <Route
             path="/ingredients/:id"
             element={
-              <ModalUI title="Детали ингредиента" onClose={handleClose}>
+              <Modal title="Детали ингредиента" onClose={handleClose}>
                 <IngredientDetails />
-              </ModalUI>
+              </Modal>
             }
           />
           <Route
@@ -192,7 +189,7 @@ const RouteComponent = (): React.JSX.Element => {
             element={
               <ProtectedRoute>
                 <Modal title="Информация о заказе" onClose={handleClose}>
-                  <OrderInfo />
+                  <OrderInfo isModal />
                 </Modal>
               </ProtectedRoute>
             }

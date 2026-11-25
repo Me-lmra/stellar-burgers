@@ -31,7 +31,11 @@ export const Profile = (): React.JSX.Element => {
 
   const handleSubmit = (e: SyntheticEvent): void => {
     e.preventDefault();
-    void dispatch(updateUser(formValue));
+    void dispatch(updateUser(formValue)).then((result) => {
+      if (updateUser.fulfilled.match(result)) {
+        setFormValue((prev) => ({ ...prev, password: '' }));
+      }
+    });
   };
 
   const handleCancel = (e: SyntheticEvent): void => {
