@@ -1,23 +1,44 @@
 import { Preloader, OrderInfoUI } from '@ui';
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+
+import { getOrderByNumber, getOrderByNumberSelector } from '@services/slices/feed';
+import { getIngredientsDataSelector } from '@services/slices/ingredients';
+import { getProfileOrderByNumberSelector } from '@services/slices/profile';
+import { useSelector, useDispatch } from '@services/store';
 
 import type { TIngredient } from '@utils-types';
 
-export const OrderInfo = (): React.JSX.Element => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0,
-  };
+import styles from '../../components/app/app.module.css';
 
-  const ingredients: TIngredient[] = [];
+type TOrderInfoProps = {
+  isModal?: boolean;
+};
 
-  /* Готовим данные для отображения */
+export const OrderInfo = ({ isModal = false }: TOrderInfoProps): React.JSX.Element => {
+  const dispatch = useDispatch();
+  const { number } = useParams<{ number: string }>();
+
+  const [isOrderLoading, setIsOrderLoading] = useState(false);
+
+  const ingredients = useSelector(getIngredientsDataSelector);
+  const orderData = useSelector((state) => {
+    if (!number) return null;
+    const num = Number(number);
+    return (
+      getProfileOrderByNumberSelector(state, num) ?? getOrderByNumberSelector(state, num)
+    );
+  });
+
+  useEffect(() => {
+    if (!number) return;
+    if (orderData) return;
+    setIsOrderLoading(true);
+    void dispatch(getOrderByNumber(Number(number))).finally(() => {
+      setIsOrderLoading(false);
+    });
+  }, [dispatch, number, orderData?.number]);
+
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -57,9 +78,15 @@ export const OrderInfo = (): React.JSX.Element => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  if (isOrderLoading) {
     return <Preloader />;
   }
 
-  return <OrderInfoUI orderInfo={orderInfo} />;
+  if (!orderInfo) {
+    return (
+      <p className={`${styles.message} text text_type_main-medium`}>Заказ не найден</p>
+    );
+  }
+
+  return <OrderInfoUI orderInfo={orderInfo} isModal={isModal} />;
 };

@@ -11,9 +11,17 @@ import styles from './order-info.module.css';
 
 export const OrderInfoUI = memo(function OrderInfoUI({
   orderInfo,
+  isModal = false,
 }: OrderInfoUIProps): React.JSX.Element {
   return (
     <div className={styles.wrap}>
+      <h3
+        className={`text text_type_main-medium pb-3 ${
+          isModal ? '' : styles.orderNumber
+        } ${isModal ? 'pt-0' : 'pt-10'}`}
+      >
+        #{String(orderInfo.number).padStart(6, '0')}
+      </h3>
       <h3 className={`text text_type_main-medium  pb-3 pt-10 ${styles.header}`}>
         {orderInfo.name}
       </h3>
